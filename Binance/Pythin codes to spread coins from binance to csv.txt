@@ -1,0 +1,43 @@
+import csv
+from binance.client import Client
+
+# Prompt for Binance API credentials
+API_KEY = input("Enter your Binance API Key: ")
+API_SECRET = input("Enter your Binance API Secret: ")
+
+# Function to withdraw cryptocurrency
+def withdraw_crypto(client, coin, address, amount):
+    try:
+        withdrawal = client.withdraw(
+            coin=coin,
+            address=address,
+            amount=amount
+        )
+        print(f'Withdrew {amount} {coin} to {address}')
+    except Exception as e:
+        print(f'Error withdrawing {coin} to {address}: {e}')
+
+# Read addresses from CSV file
+addresses = []
+with open('addresses.csv', 'r') as csvfile:
+    csvreader = csv.reader(csvfile)
+    for row in csvreader:
+        addresses.append(row[0])  # Assuming the addresses are in the first column
+
+# Prompt the user for the cryptocurrency and amount to withdraw
+crypto = input("Enter the cryptocurrency to withdraw (e.g., BTC, ETH, USDT): ")
+total_amount = float(input(f"Enter the total {crypto} amount to withdraw (between 0.1 and 20.0): "))
+
+# Validate the amount
+if total_amount < 0.1 or total_amount > 20.0:
+    print("Invalid amount. Please enter a value between 0.1 and 20.0.")
+else:
+    # Calculate the amount to distribute to each address
+    amount_per_address = total_amount / len(addresses)
+
+    # Initialize Binance client
+    client = Client(API_KEY, API_SECRET)
+
+    # Withdraw cryptocurrency to each address
+    for address in addresses:
+        withdraw_crypto(client, crypto, address, amount_per_address)
